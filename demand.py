@@ -1419,5 +1419,69 @@ for i in range(len(top_10_states)):
 
 
 
+#%% Correlation Graph
+
+import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
+
+# Load data
+india_correlation = pd.DataFrame(index=india_peak_demand_matrix.index, columns=['Peak Demand','Demand'])
+india_correlation['Peak Demand'] = india_peak_demand_matrix['Peak Demand']/1000
+india_correlation = india_correlation[:-1]
+
+
+years = [2017,2018,2019,2020,2021,2022]
+
+
+for year in years:
+    demand = india_hourly_demand['Data'].loc[india_hourly_demand['Calendar Year'] == year].sum() / 1000000
+    india_correlation.loc[year, 'Demand'] = demand
+
+
+
+# Convert columns to numeric
+india_correlation['Demand'] = pd.to_numeric(india_correlation['Demand'])
+india_correlation['Peak Demand'] = pd.to_numeric(india_correlation['Peak Demand'])
+
+# Convert columns to numpy arrays
+peak_demand = india_correlation['Peak Demand'].to_numpy()
+demand = india_correlation['Demand'].to_numpy()
+years = india_correlation.index.tolist()
+
+# Calculate correlation
+corr = np.corrcoef(demand, peak_demand)[0, 1]
+
+# Calculate the trendline equation
+z = np.polyfit(demand, peak_demand, 1)
+p = np.poly1d(z)
+trendline_x = np.linspace(demand.min(), demand.max(), 100)
+trendline_y = p(trendline_x)
+
+# Create a scatter plot of 'demand' vs 'peak demand'
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=demand, y=peak_demand, mode='markers+text', 
+                         text=years, textposition='top center',
+                         marker=dict(size=10, color='red', opacity=0.5)))
+
+# Add the trendline equation to the plot
+fig.add_trace(go.Scatter(x=trendline_x, y=trendline_y, mode='lines', name='Trendline', 
+                         line=dict(dash='dash')))
+
+# Add titles to the axes
+fig.update_layout(title='Correlation between Peak Demand and Demand', 
+                  xaxis_title='Demand(TWh)', yaxis_title='Peak Demand(GW)', showlegend=False, template='plotly_white')
+
+# Add a correlation coefficient annotation to the plot
+fig.add_annotation(x=0.5, y=0.9, text=f'Correlation Coefficient: {corr:.2f}', showarrow=False, 
+                   xref='paper', yref='paper', align='center')
+
+# Show the plot
+fig.show()
+
+
+# Save the plot to an HTML file
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/graphs/india_correlation.html"
+fig.write_html(filename)
 
 
