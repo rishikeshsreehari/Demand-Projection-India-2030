@@ -1425,19 +1425,45 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
+
+
 # Load data
-india_correlation = pd.DataFrame(index=india_peak_demand_matrix.index, columns=['Peak Demand','Demand'])
-india_correlation['Peak Demand'] = india_peak_demand_matrix['Peak Demand']/1000
-india_correlation = india_correlation[:-1]
+india_correlation = pd.DataFrame(index=[2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022], 
+                                  columns=['Peak Demand','Demand'])
+
+#Added values from CEA historic data
+
+
+cea_data = {
+    2004: [77.652, 548.115],
+    2005: [81.792, 578.819],
+    2006: [86.818, 624.495],
+    2007: [90.793, 666.007],
+    2008: [96.785, 691.038],
+    2009: [104.009, 746.644],
+    2010: [110.256, 788.355],
+    2011: [116.191, 857.886],
+    2012: [123.294, 908.652],
+    2013: [129.815, 959.829],
+    2014: [141.16, 1030.785],
+    2015: [148.463, 1090.85],
+    2016: [156.934, 1135.332]
+}
+
+# Load data
+india_correlation = pd.DataFrame(index=cea_data.keys(), columns=['Peak Demand','Demand'])
+
+# Added values from the dictionary
+for year in cea_data.keys():
+    india_correlation.loc[year] = cea_data[year]
 
 
 years = [2017,2018,2019,2020,2021,2022]
 
-
 for year in years:
     demand = india_hourly_demand['Data'].loc[india_hourly_demand['Calendar Year'] == year].sum() / 1000000
     india_correlation.loc[year, 'Demand'] = demand
-
+    india_correlation.loc[year,'Peak Demand'] = india_peak_demand_matrix.loc[year,'Peak Demand']/1000
 
 
 # Convert columns to numeric
@@ -1450,7 +1476,7 @@ demand = india_correlation['Demand'].to_numpy()
 years = india_correlation.index.tolist()
 
 # Calculate correlation
-corr = np.corrcoef(demand, peak_demand)[0, 1]
+corr = np.corrcoef(peak_demand,demand)[0, 1]
 
 # Calculate the trendline equation
 z = np.polyfit(demand, peak_demand, 1)
@@ -1472,16 +1498,25 @@ fig.add_trace(go.Scatter(x=trendline_x, y=trendline_y, mode='lines', name='Trend
 fig.update_layout(title='Correlation between Peak Demand and Demand', 
                   xaxis_title='Demand(TWh)', yaxis_title='Peak Demand(GW)', showlegend=False, template='plotly_white')
 
+
+
+
 # Add a correlation coefficient annotation to the plot
-fig.add_annotation(x=0.5, y=0.9, text=f'Correlation Coefficient: {corr:.2f}', showarrow=False, 
+fig.add_annotation(x=0.5, y=0.9, text=f'Correlation Coefficient: {corr:.3f}', showarrow=False, 
                    xref='paper', yref='paper', align='center')
 
-# Show the plot
-fig.show()
 
 
 # Save the plot to an HTML file
 filename = "G:/My Drive/Work/Vasudha/Demand_Projection/graphs/india_correlation.html"
 fig.write_html(filename)
+
+
+
+
+
+
+
+
 
 
