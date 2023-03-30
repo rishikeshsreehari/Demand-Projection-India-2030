@@ -437,121 +437,10 @@ veri['diff']=(veri['Energy CAGR']-veri['Peak CAGR'])
     
     
     
-#%% Top 10 States
 
-
-
-# extract data for year 2029-2030
-df_2029_2030_peak = peak_demand_matrix.loc['2029-2030']
-
-# sort data in descending order based on peak demand
-df_2029_2030_sorted = df_2029_2030_peak.sort_values(ascending=False)
-
-# extract top 10 states
-top_10_states = df_2029_2030_sorted.index[:10].tolist()
-
-peak_days_states = demand_2029_reshaped.idxmax(axis=0)
-
-
-peak_days_states = pd.to_datetime(peak_days_states)
-
-# extract the day component and store it in a new Series
-peak_days_states = peak_days_states.dt.date
-
-
-
-#Peak Day Load Curves for Top 10 States
-
-for state in top_10_states:
-    # extract the peak day for the current state as a date object
-    peak_day = peak_days_states[state]
-    
-    # convert the date object to a datetime object with a default time of 00:00:00
-    peak_day_dt = datetime.datetime.combine(peak_day, datetime.time())
-    peak_day_str = peak_day_dt.strftime("%Y-%m-%d")
-    
-    # extract the demand data for the current state and peak day
-    data = demand_2029_reshaped.loc[peak_day_str, state] / 1000
-    
-    # create the plot and set the title using the state and peak day
-    fig, ax = plt.subplots()
-    ax.plot(data, label=state)
-    ax.set_ylabel("Demand (GW)")
-    ax.set_xlabel("Hour of Day")
-    ax.set_title('2029 Peak Day Load Curve of '+ state + ' for ' + peak_day_str)
-    ax.legend()
-   
-   # set x-axis ticks to be hourly and display only the hours
-    ax.xaxis.set_major_locator(mdates.HourLocator(interval=3))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    plt.xticks(rotation=45)
-   
-    plt.show()
-    
-#Yearly Load Curves for Top 10 states
-
-for state in top_10_states:
-    data = demand_2029_reshaped[state] / 1000
-    plt.plot(data)
-    plt.ylabel("Demand(GW)")
-    plt.xlabel("Day")
-    plt.title('Yearly Load Curve of '+ state)
-    plt.legend()
-    plt.show()
     
 
 
-#%% Load Duration Curve for top 10 states
-
-
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-sorted_data = pd.DataFrame(columns=states)
-
-sorted_data = pd.DataFrame(data=[sorted(col, reverse=True) for _, col in demand_2029_reshaped.items()]).T
-
-# set column names for sorted_data
-sorted_data.columns = demand_2029_reshaped.columns
-
-
-# Calculate the cumulative frequency of the load demand for each state
-cumulative_freq = sorted_data.cumsum() / sorted_data.sum()
-
-# Get the maximum demand value for each state
-max_demand = demand_2029_reshaped.max()
-
-load_factor = sorted_data.apply(lambda x: x / max_demand[x.name])
-
-
-import numpy as np
-
-for state in demand_2029_reshaped.columns:
-    # Get the minimum and maximum load factor values for the state
-    min_load_factor = load_factor[state].min() * 100
-    max_load_factor = load_factor[state].max() * 100
-    
-    # Plot the load duration curve
-    plt.plot(cumulative_freq[state]*100, load_factor[state]*100)
-    plt.xlabel('Percentage of Time')
-    plt.ylabel('Load Factor')
-    plt.title('Load Duration Curve of ' + state)
-    plt.legend()
-    
-    # Add grid lines only along the x-axis
-    plt.grid(axis='y')
-    
-    # # Set x and y ticks with 5% intervals
-    # x_step_size = 5
-    # y_step_size = 5
-    # x_ticks = np.arange(0, 101, x_step_size)
-    # y_ticks = np.arange(min_load_factor, 100, y_step_size)
-    # plt.xticks(x_ticks)
-    # plt.yticks(y_ticks)
-    
-    plt.show()
 
 
 
@@ -840,7 +729,7 @@ seasons = {
     9: 'Monsoon',
     10: 'Monsoon',
     11: 'Winter',
-    12: 'Winter'
+    12: 'Winter'  
 }
 
 # Use apply method along with lambda function to create new 'Season' column
@@ -1192,6 +1081,127 @@ df_max_india['Date'] = pd.to_datetime(df_max_india['Index']).dt.date
 
 
 
+#%% Min/Max/Avg Graphs Yearly
+
+
+# Compute the min, max, and mean demand values for each calendar year
+india_demand_stats = india_hourly_demand.groupby('Calendar year')['Data'].agg(['min', 'max', 'mean']).round(0)
+
+# Set the calendar year as the index of the resulting DataFrame
+india_demand_stats.index = pd.to_datetime(india_demand_stats.index, format='%Y').strftime('%Y')
+
+# Rename the columns to be more descriptive
+india_demand_stats.columns = ['Min demand', 'Min demand', 'Min demand']
+
+
+
+#Line Graph for showing stats
+# Create a new figure
+fig = go.Figure()
+
+# Add the min, max, and avg demand curves to the figure
+fig.add_trace(go.Scatter(x=india_demand_stats.index, y=india_demand_stats['Min demand']/1000, name='Min demand'))
+fig.add_trace(go.Scatter(x=india_demand_stats.index, y=india_demand_stats['Max demand']/1000, name='Max demand'))
+fig.add_trace(go.Scatter(x=india_demand_stats.index, y=india_demand_stats['Avg demand']/1000, name='Avg demand'))
+
+# Update the x-axis and y-axis labels
+fig.update_xaxes(title_text='Year')
+fig.update_yaxes(title_text='Demand (GW)')
+
+# Add a title to the figure
+fig.update_layout(title_text='Demand Statistics by Year')
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/graphs/demand_stats_line.html"
+fig.write_html(filename)
+
+
+#Grouped Bar chart for showing stats
+
+
+years = [2017, 2018, 2019, 2020, 2021, 2022]
+
+# Create a bar chart with the data
+fig = go.Figure()
+fig.add_trace(go.Bar(x=years, y=india_demand_stats['Min demand']/1000, name='Min demand', text=india_demand_stats['Min demand']/1000, textposition='outside'))
+fig.add_trace(go.Bar(x=years, y=india_demand_stats['Max demand']/1000, name='Max demand', text=india_demand_stats['Max demand']/1000, textposition='outside'))
+fig.add_trace(go.Bar(x=years, y=india_demand_stats['Avg demand']/1000, name='Avg demand', text=india_demand_stats['Avg demand']/1000, textposition='outside'))
+
+# Round the text values to the nearest integer
+for trace in fig.data:
+    trace.text = [round(t) for t in trace.text]
+
+# Create a line chart for each data series
+fig.add_trace(go.Scatter(x=years, y=india_demand_stats['Min demand']/1000, name='Min demand',mode='lines', line=dict(dash='dash')))
+fig.add_trace(go.Scatter(x=years, y=india_demand_stats['Max demand']/1000, name='Max demand',mode='lines', line=dict(dash='dash')))
+fig.add_trace(go.Scatter(x=years, y=india_demand_stats['Avg demand']/1000, name='Avg demand', mode='lines', line=dict(dash='dash')))
+
+
+bar_width = 0.4
+
+# Shift the Min demand line graph to the left by one bar width
+fig.update_traces(x=[year - bar_width/2 for year in years], selector=dict(name='Min demand'))
+
+# Shift the Avg demand line graph to the right by one bar width
+fig.update_traces(x=[year + bar_width/2 for year in years], selector=dict(name='Avg demand'))
+
+
+# Update the layout of the chart
+fig.update_layout(barmode='group', title='Demand Statistics by Year in India (2017-2022)')
+
+fig.update_xaxes(title_text='Year')
+fig.update_yaxes(title_text='Demand (GW)')
+
+# Show the chart
+fig.show()
+
+india_hourly_demand.to_csv("G:/My Drive/Work/Vasudha/Demand_Projection/india_hourly.csv")
+
+
+
+#%% Min/Max/Avg graphs monthly
+
+
+
+
+
+import plotly.express as px
+import pandas as pd
+import numpy as np
+import plotly.graph_objs as go
+
+# Group the dataframe by week and calculate the min, avg, and max demand
+india_weekly_demand = india_hourly_demand.groupby(pd.Grouper(freq='W'))['Data'].agg(['min', 'mean', 'max'])
+
+# Create a line chart with Plotly
+fig = px.line(india_weekly_demand/1000, x=india_weekly_demand.index, y=['min', 'mean', 'max'], 
+              title='Weekly Min, Avg, and Max Demand in India')
+
+# Add linear trend lines to the chart
+for i, y_col in enumerate(['min', 'mean', 'max']):
+    x = india_weekly_demand.index.astype(np.int64) // 10**9
+    y = india_weekly_demand[y_col] / 1000
+    m, b = np.polyfit(x, y, 1)
+    trendline = m * x + b
+    line_color = fig.data[i].line.color
+    fig.add_trace(
+        go.Scatter(
+            x=india_weekly_demand.index,
+            y=trendline,
+            name=f'{y_col} Trendline',
+            line=dict(dash='dash', color=line_color)
+        )
+    )
+
+# Update the chart layout with axes titles and no legend title
+fig.update_layout(
+    xaxis_title='Date',
+    yaxis_title='Demand (GW)',
+    legend_title='',
+    template='plotly_white'
+)
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/graphs/india_min_max_avg.html"
+fig.write_html(filename)
 
 
 
@@ -1200,11 +1210,211 @@ df_max_india['Date'] = pd.to_datetime(df_max_india['Index']).dt.date
 
 
 
+#%%#%% Top 10 States
+
+
+
+# extract data for year 2029-2030
+df_2029_2030_peak = peak_demand_matrix.loc[2029]
+
+# sort data in descending order based on peak demand
+df_2029_2030_sorted = df_2029_2030_peak.sort_values(ascending=False)
+
+# extract top 10 states
+top_10_states = df_2029_2030_sorted.index[:10].tolist()
+
+peak_days_states = demand_2029_reshaped.idxmax(axis=0)
+
+
+peak_days_states = pd.to_datetime(peak_days_states)
+
+# extract the day component and store it in a new Series
+peak_days_states = peak_days_states.dt.date
+
+
+
+#Peak Day Load Curves for Top 10 States
+
+for state in top_10_states:
+    # extract the peak day for the current state as a date object
+    peak_day = peak_days_states[state]
+    
+    # convert the date object to a datetime object with a default time of 00:00:00
+    peak_day_dt = datetime.datetime.combine(peak_day, datetime.time())
+    peak_day_str = peak_day_dt.strftime("%Y-%m-%d")
+    
+    # extract the demand data for the current state and peak day
+    data = demand_2029_reshaped.loc[peak_day_str, state] / 1000
+    
+    # create the plot and set the title using the state and peak day
+    fig, ax = plt.subplots()
+    ax.plot(data, label=state)
+    ax.set_ylabel("Demand (GW)")
+    ax.set_xlabel("Hour of Day")
+    ax.set_title('2029 Peak Day Load Curve of '+ state + ' for ' + peak_day_str)
+    ax.legend()
+   
+   # set x-axis ticks to be hourly and display only the hours
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=3))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    plt.xticks(rotation=45)
+   
+    plt.show()
+    
+#Yearly Load Curves for Top 10 states
+
+for state in top_10_states:
+    data = demand_2029_reshaped[state] / 1000
+    plt.plot(data)
+    plt.ylabel("Demand(GW)")
+    plt.xlabel("Day")
+    plt.title('Yearly Load Curve of '+ state)
+    plt.legend()
+    plt.show()
+
+
+#%% Load Duration Curve for top 10 states
 
 
 
 
+import plotly.express as px
 
+sorted_data = pd.DataFrame(data=[sorted(col, reverse=True) for _, col in demand_2029_reshaped_exbus.items()]).T
+
+# set column names for sorted_data
+sorted_data.columns = demand_2029_reshaped_exbus.columns
+
+# Calculate the cumulative frequency of the load demand for each state
+cumulative_freq = sorted_data.cumsum() / sorted_data.sum()
+
+for state in top_10_states:
+    # Plot the load duration curve
+    fig = px.line(x=cumulative_freq[state]*100, y=sorted_data[state]/1000, title=f"Load Duration Curve of {state}")
+    fig.update_layout(xaxis_title="Percentage of Time", yaxis_title="Load(GW)")
+    filename = f"G:/My Drive/Work/Vasudha/Demand_Projection/graphs/{state}_load_duration.html"
+    fig.write_html(filename)
+
+
+    
+#%% Annexure data for top 10 states
+
+
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
+# Create a list to store the subplots for each state
+subplots = []
+
+for state in top_10_states:
+    # Peak day load curve
+    peak_day = peak_days_states[state]
+    peak_day_dt = datetime.datetime.combine(peak_day, datetime.time())
+    peak_day_str = peak_day_dt.strftime("%Y-%m-%d")
+    data = demand_2029_reshaped.loc[peak_day_str, state] / 1000
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(x=data.index, y=data, mode='lines', name='Peak Day Load Curve'))
+    fig1.update_layout(title='2029 Peak Day Load Curve of ' + state + ' for ' + peak_day_str, xaxis_title='Hour of Day', yaxis_title='Demand (GW)', legend_title='')
+
+    # Load duration curve
+    sorted_data = pd.DataFrame(data=[sorted(col, reverse=True) for _, col in demand_2029_reshaped_exbus.items()]).T
+    sorted_data.columns = demand_2029_reshaped_exbus.columns
+    cumulative_freq = sorted_data.cumsum() / sorted_data.sum()
+    fig2 = go.Figure()
+    fig2.add_trace(go.Scatter(x=cumulative_freq[state]*100, y=sorted_data[state]/1000, mode='lines', name='Load Duration Curve'))
+    fig2.update_layout(title='Load Duration Curve of ' + state, xaxis_title='Percentage of Time', yaxis_title='Load (GW)', legend_title='')
+
+    # Yearly load curve
+    data = demand_2029_reshaped[state] / 1000
+    fig3 = go.Figure()
+    fig3.add_trace(go.Scatter(x=data.index, y=data, mode='lines', name='Yearly Load Curve'))
+    fig3.update_layout(title='Yearly Load Curve of ' + state, xaxis_title='Day', yaxis_title='Demand (GW)', legend_title='')
+
+   # Combine the subplots for the current state
+    fig_combined = sp.make_subplots(rows=2, cols=2, subplot_titles=[f"Peak Day Load Curve of {state} for {peak_day_str}", f"Load Duration Curve of {state}", f"Yearly Load Curve of {state}"])
+
+# Add the traces to the subplot
+    fig_combined.add_trace(fig1.data[0], row=1, col=1)
+    fig_combined.add_trace(fig2.data[0], row=1, col=2)
+    fig_combined.add_trace(fig3.data[0], row=2, col=1, colspan=2)
+
+# Update the layout of the subplot to make fig3 wide
+    fig_combined.update_layout(height=800, width=1000, showlegend=False, 
+                           template="plotly_white", margin=dict(l=20, r=20, t=60, b=20), 
+                           subplot_titles=dict(x=0.5, y=0.93, font=dict(size=18)))
+    fig_combined.update_xaxes(title_text="Hour of Day", row=1, col=1)
+    fig_combined.update_yaxes(title_text="Demand (GW)", row=1, col=1)
+    fig_combined.update_xaxes(title_text="Percentage of Time", row=1, col=2)
+    fig_combined.update_yaxes(title_text="Load (GW)", row=1, col=2)
+    fig_combined.update_xaxes(title_text="Day", row=2, col=1)
+    fig_combined.update_yaxes(title_text="Demand (GW)", row=2, col=1)
+
+# Write the subplots for each state to separate HTML files
+for i in range(len(top_10_states)):
+    filename = f"G:/My Drive/Work/Vasudha/Demand_Projection/graphs/top10/{top_10_states[i]}_combined.html"
+
+    subplots[i].write_html(filename)
+
+
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
+# Create a list to store the subplots for each state
+subplots = []
+
+for state in top_10_states:
+    # Peak day load curve
+    peak_day = peak_days_states[state]
+    peak_day_dt = datetime.datetime.combine(peak_day, datetime.time())
+    peak_day_str = peak_day_dt.strftime("%Y-%m-%d")
+    data = demand_2029_reshaped.loc[peak_day_str, state] / 1000
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(x=data.index, y=data, mode='lines', name='Peak Day Load Curve'))
+    fig1.update_layout(title='2029 Peak Day Load Curve for ' + peak_day_str, xaxis_title='Hour of Day', yaxis_title='Demand (GW)', legend_title='')
+    fig1.update
+    # Load duration curve
+    sorted_data = pd.DataFrame(data=[sorted(col, reverse=True) for _, col in demand_2029_reshaped_exbus.items()]).T
+    sorted_data.columns = demand_2029_reshaped_exbus.columns
+    cumulative_freq = sorted_data.cumsum() / sorted_data.sum()
+    fig2 = go.Figure()
+    fig2.add_trace(go.Scatter(x=cumulative_freq[state]*100, y=sorted_data[state]/1000, mode='lines', name='Load Duration Curve'))
+    fig2.update_layout(title='Load Duration Curve', xaxis_title='Percentage of Time', yaxis_title='Load (GW)', legend_title='')
+
+    # Yearly load curve
+    data = demand_2029_reshaped[state] / 1000
+    fig3 = go.Figure()
+    fig3.add_trace(go.Scatter(x=data.index, y=data, mode='lines', name='Yearly Load Curve'))
+    fig3.update_layout(title='2029 Yearly Load Curve', xaxis_title='Day', yaxis_title='Demand (GW)', legend_title='')
+
+    # Combine the subplots for the current state
+    fig_combined = make_subplots(rows=2, cols=2, specs=[[{}, {}], [{"colspan": 2}, None]], subplot_titles=[f"Peak Day Load Curve of {state} for {peak_day_str}", f"Load Duration Curve of {state}", f"Yearly Load Curve of {state}"])
+    fig_combined.add_trace(fig1.data[0], row=1, col=1)
+    fig_combined.add_trace(fig2.data[0], row=1, col=2)
+    fig_combined.add_trace(fig3.data[0], row=2, col=1)
+    fig_combined.update_layout(title={
+        'text': state,
+        'x': 0.5, # center title horizontally
+        'y': 0.95 # position title slightly above the top of the plot
+    },height=800, width=1000, showlegend=False)
+    # Update the subplot axes titles
+    fig_combined.update_xaxes(title_text='Hour of Day', row=1, col=1)
+    fig_combined.update_yaxes(title_text='Demand (GW)', row=1, col=1)
+    
+    fig_combined.update_xaxes(title_text='Percentage of Time', row=1, col=2)
+    fig_combined.update_yaxes(title_text='Load (GW)', row=1, col=2)
+
+    fig_combined.update_xaxes(title_text='Day', row=2, col=1)
+    fig_combined.update_yaxes(title_text='Demand (GW)', row=2, col=1)
+
+    
+    
+    # Add the subplot to the list
+    subplots.append(fig_combined)
+
+# Write the subplots for each state to separate HTML files
+for i in range(len(top_10_states)):
+    filename = f"G:/My Drive/Work/Vasudha/Demand_Projection/graphs/top10/{top_10_states[i]}_combined.html"
+    subplots[i].write_html(filename)
 
 
 
