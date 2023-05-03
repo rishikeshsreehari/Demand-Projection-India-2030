@@ -10,13 +10,15 @@ Existing demand and distribution losses to be loaded as inputs.
 - Energy projections for 2029-2030
 
 
-## Output Required:
+## Outputs:
 
 - State-wise and national load profile for 2029-2030
 - Peak Day curves for state level and national level
 - Projected Demand curve vs Base Year
 - Seasonal Variation of load - summer/monsoon/winter
 - Regional share of load - NR/WR/SR/NER/ER
+- HGR Growth Scenario
+
 
 
 
