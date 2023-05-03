@@ -20,40 +20,76 @@ import datetime
 import matplotlib.dates as mdates
 
 
+#Declarations
 
+#Projection Year
+#Graph Title Size
+#Graph Axes Title
+#Graph Tick Size
+#Plotly Template
+#Graph Output Directory
+#CAGR Upper Limit
+#CAGR Lower Limit
 
+#Directories
 
+#Losses URL
+#State Demand
 
 
 df_hourly_state_demand = pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\statewise_demand.xlsx",index_col=0)
 df_losses = pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\losses.xlsx",index_col=0)
 
 
-res_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annex.xlsx",'res_bau',index_col=0)
-ser_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annex.xlsx",'ser_bau',index_col=0)                       
-agri_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annex.xlsx",'agri_bau',index_col=0)   
-ind_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure_results.xlsx",'ind_bau_ut',index_col=0) 
+# res_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annex.xlsx",'res_bau',index_col=0)
+# ser_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annex.xlsx",'ser_bau',index_col=0)                       
+# agri_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annex.xlsx",'agri_bau',index_col=0)   
+# ind_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure_results.xlsx",'ind_bau_ut',index_col=0) 
+
+
+res_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'res_bau',index_col=0)
+ser_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'ser_bau',index_col=0)                       
+agri_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'agri_bau',index_col=0)   
+ind_bau=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'ind_bau_ut',index_col=0) 
+
+res_hgr=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'res_hgr',index_col=0)
+ser_hgr=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'ser_hgr',index_col=0)                       
+agri_hgr=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'agri_hgr',index_col=0)   
+ind_hgr=pd.read_excel(r"G:\My Drive\Work\Vasudha\Demand_Projection\annexure2031.xlsx",'ind_hgr_ut',index_col=0) 
 
 
 
 
 
-index_values=['2016-2017', '2017-2018', '2018-2019', '2019-2020', '2020-2021','2021-2022','2022-2023','2029-2030']
+
+
+
+
+index_values=['2016-2017', '2017-2018', '2018-2019', '2019-2020', '2020-2021','2021-2022','2022-2023','2031-2032']
 
 
 projected_demand_bau=res_bau+ser_bau+agri_bau+ind_bau
+projected_demand_hgr=res_hgr+ser_hgr+agri_hgr+ind_hgr
+
 
 projected_demand_bau=projected_demand_bau.drop(columns=['Puducherry'])
+projected_demand_hgr=projected_demand_hgr.drop(columns=['Puducherry'])
+
+
 
 years_1=index_values
 
 states = projected_demand_bau.columns
 
 projected_demand_bau_matrix=pd.DataFrame(index=years_1,columns=states)
+projected_demand_hgr_matrix=pd.DataFrame(index=years_1,columns=states)
+
 
 for state in states:
     for year in years_1:
         projected_demand_bau_matrix.loc[year][state]=projected_demand_bau.loc[year][state]
+        projected_demand_hgr_matrix.loc[year][state]=projected_demand_hgr.loc[year][state]
+        
 
 verification = pd.DataFrame(index = states, columns=['CAGR','Peak Demand','Peak Demand LF','Reshaped LF','Base Year LF','Projected Demand'])
 
@@ -121,7 +157,7 @@ india_hourly_demand = df_hourly_state_demand.sum(axis=1)
 india_hourly_demand = india_hourly_demand.to_frame()
 india_hourly_demand['Calendar Year'] = pd.to_datetime(india_hourly_demand.index, format='%Y-%m-%d %H:%M:%S').year
 
-calendar_years = [2017, 2018, 2019,2020,2021,2022,2029]
+calendar_years = [2017, 2018, 2019,2020,2021,2022,2031]
 
 
 years=df_hourly_state_consumption['Financial Year'].unique()
@@ -172,10 +208,11 @@ fig.update_layout(title='Growth of Peak Demand', annotations=annotations)
 fig.update_xaxes(title_text="Year")
 fig.update_yaxes(title_text="Peak Demand (GW)")
 
-fig.write_html('G:\My Drive\Work\Vasudha\Demand_Projection\graphs\india_peak_demand_growth.html')
+fig.write_html('G:\My Drive\Work\Vasudha\Demand_Projection\d\graphs\india_peak_demand_growth.html')
 
 
-#%%Finding Peak days for India
+
+#%% Finding peaking days
 
 yearly_demand = india_hourly_demand.groupby(by=india_hourly_demand.index.year)
 
@@ -184,7 +221,7 @@ max_demand_indexes = yearly_demand.idxmax()
 
 
 
-peak_demand_days_in = pd.Series(max_demand_indexes.dt.date, index=max_demand_indexes.dt.year)
+peak_demand_days_in = pd.Series(max_demand_indexes.Data, index=max_demand_indexes.index)
 
 
 peak_demand_days_in = peak_demand_days_in.rename_axis('Year')
@@ -200,18 +237,18 @@ peak_days_str = [d.strftime('%Y-%m-%d %H:%M:%S') for d in peak_days]
 
 
 
-
+india_hourly_demand1 = india_hourly_demand['Data']
 
 
 import plotly.graph_objs as go
 import pandas as pd
 
 # Create a new dataframe with hourly demand data for all peak days
-df = pd.concat([india_hourly_demand.loc[day[:10]].reset_index(drop=True) for day in peak_days_str], axis=1)
+df = pd.concat([india_hourly_demand1.loc[day[:10]].reset_index(drop=True) for day in peak_days_str], axis=1)
 df.columns = [day[:10] for day in peak_days_str]
 
 
-    
+
 traces = []
 annotations = []
 for day in peak_days_str:
@@ -235,31 +272,116 @@ for day in peak_days_str:
         y=peak_demand,
         xref='x',
         yref='y',
-        text=f'Peak: {peak_demand} GW',
+        text=f'{format(peak_demand, ".0f")} GW',
         showarrow=True,
         arrowhead=7,
         ax=0,
         ay=-40
     )
     annotations.append(annotation)
+    
+ 
 
 # Create the plot
 layout = go.Layout(
-    title='Peak Day Load Curves 2017-2022',
+    title='Peak Day Load Curves (2017-2022)',height=600, width=800,
     xaxis=dict(
         title='Hour of Day',
         tickmode='linear',
         tick0=0,
-        dtick=1,
-        range=[0, 23]
+        range=[0,23], dtick=3, tickfont=dict(size=16, family='Arial')
     ),
     yaxis=dict(
-        title='Demand (GW)'
+        title='Demand (GW)',
+        range=[0, 300], tickfont=dict(size=16, family='Arial')
     ),
-    annotations=annotations
+    annotations=annotations,
+    shapes=[
+        # Daytime shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=7,
+            y0=0,
+            x1=17,
+            y1=1,
+            fillcolor='#FFFF66',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Day'
+        ),
+        
+        # Evening shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=17,
+            y0=0,
+            x1=23,
+            y1=1,
+            fillcolor='#FFD580',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Evening'
+        ),
+       # Night shading
+       # dict(
+       #     type='rect',
+       #     xref='x',
+       #     yref='paper',
+       #     x0=,
+       #     y0=0,
+       #     x1=23,
+       #     y1=1,
+       #     fillcolor='#ADD8E6',
+       #     opacity=0.3,
+       #     layer='below',
+       #     line_width=0,
+       #     name='Night'
+       #     ),
+       dict(
+           type='rect',
+           xref='x',
+           yref='paper',
+           x0=0,
+           y0=0,
+           x1=7,
+           y1=1,
+           fillcolor='#ADD8E6',
+           opacity=0.3,
+           layer='below',
+           line_width=0,
+           name='Night'
+           )
+
+
+    ]
+    ,template='simple_white'
+
 )
+
+
+fig.update_xaxes(title_text="Hour of Day", range=[0,23], tickmode='linear', dtick=3, tickfont=dict(size=16, family='Arial'))
+fig.update_yaxes(title_text="Demand(GW)", range=[0, 300], tickfont=dict(size=16, family='Arial'))
+
+
+
+fig.update_layout(height=600, width=800, template ='simple_white', 
+                  font=dict(size=20, family='Arial'), 
+                  legend=dict(x=0.01, y=0.2,font=dict(size=16, family='Arial')),
+                  )
+
+
+
 fig = go.Figure(data=traces, layout=layout)
-fig.write_html('G:\My Drive\Work\Vasudha\Demand_Projection\graphs\peak_days_india_demand.html')
+fig.write_html('G:\My Drive\Work\Vasudha\Demand_Projection\d\graphs\zzzz.html')
+
+
+
 
 
 
@@ -283,8 +405,8 @@ fig.write_html('G:\My Drive\Work\Vasudha\Demand_Projection\graphs\peak_days_indi
 cagr_upper_limit = 0.07
 cagr_lower_limit = 0.04
 
-projection_year = '2029'
-n = 7
+projection_year = '2031'
+n = 9
 period = 5
 
 
@@ -303,10 +425,12 @@ for state in states:
     verification.loc[state,'CAGR'] = cagr*100
     projected_lf = ((cagr + 1)**n)*last_value
     projected_peak_demand = ((cagr + 1)**n)*last_value
-    peak_demand_matrix.loc[2029][state] = projected_peak_demand
+    peak_demand_matrix.loc[2031][state] = projected_peak_demand
     df_cagr.loc[state,'Peak_Demand_2030'] = projected_peak_demand 
     verification.loc[state,'Peak Demand'] = projected_peak_demand
 
+
+#Manual Correction for TN considering the high industrial growth in state and growth of energy requirement
 
 state='Tamil Nadu'
 
@@ -317,7 +441,7 @@ df_cagr.loc[state,'CAGR'] = cagr*100
 verification.loc[state,'CAGR'] = cagr*100
 projected_lf = ((cagr + 1)**n)*last_value
 projected_peak_demand = ((cagr + 1)**n)*last_value
-peak_demand_matrix.loc[2029][state] = projected_peak_demand
+peak_demand_matrix.loc[2031][state] = projected_peak_demand
 df_cagr.loc[state,'Peak_Demand_2030'] = projected_peak_demand 
 verification.loc[state,'Peak Demand'] = projected_peak_demand
 
@@ -329,12 +453,12 @@ verification.loc[state,'Peak Demand'] = projected_peak_demand
 
 
 
-start_date = '2029-01-01 00:00:00'
-end_date = '2029-12-31 23:00:00'
+start_date = '2031-01-01 00:00:00'
+end_date = '2031-12-31 23:00:00'
 index = pd.date_range(start_date, end_date, freq='H')
 
 
-demand_2029_peak = pd.DataFrame(index=index,columns=states)
+demand_2031_peak = pd.DataFrame(index=index,columns=states)
 
 df_hourly_state_consumption_2018 = df_hourly_state_consumption[df_hourly_state_consumption['Calendar Year']==2018]
 df_hourly_state_consumption_2019 = df_hourly_state_consumption[df_hourly_state_consumption['Calendar Year']==2019]
@@ -351,14 +475,15 @@ df_hourly_state_consumption_2022 = df_hourly_state_consumption[df_hourly_state_c
 
 
 for state in states:
-    demand_2029_peak.loc[:,state] = ( df_hourly_state_consumption_2022[state].values * peak_demand_matrix.loc[2029,state] )/df_hourly_state_consumption_2022[state].max()
+    demand_2031_peak.loc[:,state] = ( df_hourly_state_consumption_2022[state].values * peak_demand_matrix.loc[2031,state] )/df_hourly_state_consumption_2022[state].max()
 
 
 
 
 #%% Correct Code
 
-demand_2029_reshaped = pd.DataFrame(index=index,columns=states)
+demand_2031_reshaped = pd.DataFrame(index=index,columns=states)
+demand_2031_reshaped_hgr = pd.DataFrame(index=index,columns=states)
 
 
 
@@ -372,10 +497,32 @@ for state in states:
     goal_value = 0.2 
     threshold = 1
     print(state)
-    target_val = projected_demand_bau_matrix.loc['2029-2030',state]*1000
-    demand_2029_reshaped.loc[:,state] = (((demand_2029_peak.loc[:,state] - peak_demand_matrix.loc[2029,state] )* goal_value) + peak_demand_matrix.loc[2029,state])
-    while(demand_2029_reshaped[state].sum() - target_val > threshold):
-        demand_2029_reshaped.loc[:,state] = (((demand_2029_peak.loc[:,state] - peak_demand_matrix.loc[2029,state] )* goal_value) + peak_demand_matrix.loc[2029,state])
+    target_val = projected_demand_bau_matrix.loc['2031-2032',state]*1000
+    demand_2031_reshaped.loc[:,state] = (((demand_2031_peak.loc[:,state] - peak_demand_matrix.loc[2031,state] )* goal_value) + peak_demand_matrix.loc[2031,state])
+    while(demand_2031_reshaped[state].sum() - target_val > threshold):
+        demand_2031_reshaped.loc[:,state] = (((demand_2031_peak.loc[:,state] - peak_demand_matrix.loc[2031,state] )* goal_value) + peak_demand_matrix.loc[2031,state])
+        #print(goal_value)
+        goal_value = goal_value + goal_step
+    
+    print(goal_value)
+print("--- %s seconds ---" % (time.time() - start_time))
+
+
+#HGR Calculation
+
+start_time = time.time()
+
+
+
+for state in states:
+    goal_step = 0.0001
+    goal_value = 0.2 
+    threshold = 1
+    print(state)
+    target_val = projected_demand_hgr_matrix.loc['2031-2032',state]*1000
+    demand_2031_reshaped_hgr.loc[:,state] = (((demand_2031_peak.loc[:,state] - peak_demand_matrix.loc[2031,state] )* goal_value) + peak_demand_matrix.loc[2031,state])
+    while(demand_2031_reshaped_hgr[state].sum() - target_val > threshold):
+        demand_2031_reshaped_hgr.loc[:,state] = (((demand_2031_peak.loc[:,state] - peak_demand_matrix.loc[2031,state] )* goal_value) + peak_demand_matrix.loc[2031,state])
         #print(goal_value)
         goal_value = goal_value + goal_step
     
@@ -388,21 +535,22 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 
 
+
 for state in states:
 
     fig = go.Figure()
     
-    fig.add_trace(go.Scatter(x=demand_2029_reshaped.index, y=demand_2029_reshaped[state],
+    fig.add_trace(go.Scatter(x=demand_2031_reshaped.index, y=demand_2031_reshaped[state],
                     mode='lines',
                     name='Reshaped'))
     
-    fig.add_trace(go.Scatter(x=demand_2029_reshaped.index, y=demand_2029_peak[state],
+    fig.add_trace(go.Scatter(x=demand_2031_reshaped.index, y=demand_2031_peak[state],
                     mode='lines',
                     name='Peak'))
 
     
 
-    fig.add_trace(go.Scatter(x=demand_2029_reshaped.index, y=df_hourly_state_consumption_2019_20[state],
+    fig.add_trace(go.Scatter(x=demand_2031_reshaped.index, y=df_hourly_state_consumption_2022[state],
                     mode='lines',
                     name='Base'))
     
@@ -449,61 +597,6 @@ veri['diff']=(veri['Energy CAGR']-veri['Peak CAGR'])
 
 
 
-#%% Verification
-
-
-for state in states:
-    verification.loc[state,'Peak Demand LF'] = (demand_2029_peak[state].mean()/demand_2029_peak[state].max())*100
-    verification.loc[state,'Reshaped LF'] = (demand_2029_reshaped[state].mean()/demand_2029_reshaped[state].max())*100
-    verification.loc[state,'Base Year LF'] = (df_hourly_state_consumption_2019_20[state].mean()/df_hourly_state_consumption_2019_20[state].max())*100
-    verification.loc[state,'Projected Demand'] = projected_demand_bau_matrix.loc['2029-2030'][state]
-
-
-
-
-verification.to_csv("check.csv")
-
-
-
-
-
-demand_2029_reshaped = pd.DataFrame(index=index,columns=states)
-
-state = 'Punjab'
-
-def goal_seek(demand_2029_peak, peak_demand_matrix, target_val,state):
-    def func(goal_seek_value):
-        demand_2029_reshaped = ((demand_2029_peak - peak_demand_matrix.loc['2029-2030',state] )* goal_seek_value) + peak_demand_matrix.loc['2029-2030',state]
-        return demand_2029_reshaped.sum().iat[0] - target_val
-
-    result = root_scalar(func, x0=0.1, x1=2 )
-    if result.converged:
-        return result.root
-    else:
-        raise ValueError("Goal seeking failed to converge.")
-
-for state in states: 
-    target_val = projected_demand_bau_matrix.loc['2029-2030',state]*1000
-    result = goal_seek(demand_2029_peak, peak_demand_matrix, target_val,state)
-    demand_2029_reshaped.loc[:,state] = (((demand_2029_peak.loc[:,state] - peak_demand_matrix.loc['2029-2030',state] )* result) + peak_demand_matrix.loc['2029-2030',state])
-
-
-def goal_seek(demand_2029_peak, peak_demand_matrix, target_val,state):
-    def func(goal_seek_value):
-        demand_2029_reshaped.loc[:,state] = ((demand_2029_peak.loc[:,state] - peak_demand_matrix.loc['2029-2030',state] )* goal_seek_value) + peak_demand_matrix.loc['2029-2030',state]
-        return demand_2029_reshaped[state].sum()- target_val
-
-    result = root_scalar(func, x0=0.1, x1=2 )
-    if result.converged:
-        return result.root
-    else:
-        raise ValueError("Goal seeking failed to converge.")
-
-
-
-
-
-
 
 
 
@@ -515,32 +608,36 @@ def goal_seek(demand_2029_peak, peak_demand_matrix, target_val,state):
 #%% All India Demand Projection calculation
 
 
-demand_2029_peak_exbus = pd.DataFrame(index=demand_2029_peak.index, columns=demand_2029_peak.columns)
-demand_2029_reshaped_exbus= pd.DataFrame(index=demand_2029_reshaped.index, columns=demand_2029_reshaped.columns)
+demand_2031_peak_exbus = pd.DataFrame(index=demand_2031_peak.index, columns=demand_2031_peak.columns)
+demand_2031_reshaped_exbus= pd.DataFrame(index=demand_2031_reshaped.index, columns=demand_2031_reshaped.columns)
 df_hourly_state_consumption_2022_exbus = pd.DataFrame(index=df_hourly_state_consumption_2022.index, columns=df_hourly_state_consumption_2022.columns)
 
 
 for state in states:
     print(state)
-    demand_2029_peak_exbus[state] = demand_2029_peak[state]/(1 - df_losses.loc[state][2029])
-    demand_2029_reshaped_exbus[state] = demand_2029_reshaped[state]/(1 - df_losses.loc[state][2029])                                      
+    demand_2031_peak_exbus[state] = demand_2031_peak[state]/(1 - df_losses.loc[state][2031])
+    demand_2031_reshaped_exbus[state] = demand_2031_reshaped[state]/(1 - df_losses.loc[state][2031])                                      
     df_hourly_state_consumption_2022_exbus[state] = df_hourly_state_consumption_2022[state]/(1 - df_losses.loc[state][2021])
 
 
-india_2029_demand_peak = demand_2029_peak_exbus.sum(axis=1)
-india_2029_demand_reshaped = demand_2029_reshaped_exbus.sum(axis=1)
+india_2031_demand_peak = demand_2031_peak_exbus.sum(axis=1)
+india_2031_demand_reshaped = demand_2031_reshaped_exbus.sum(axis=1)
 #india_base = df_hourly_state_consumption_2022_exbus.sum(axis=1)
 india_base = india_hourly_demand.loc['2022-01-01':'2022-12-31']
 india_base.index = india_base.index.round("H")
 
+india_2031_demand_reshaped = pd.DataFrame(data=india_2031_demand_reshaped,index=india_2031_demand_reshaped.index)
+india_2031_demand_reshaped.index = pd.to_datetime(india_2031_demand_reshaped.index)
 
+india_2031_demand_reshaped = india_2031_demand_reshaped.rename(columns={0: 'Demand'})
+india_base = india_base.rename(columns={0: 'Demand'})
 
 
 fig = go.Figure()
   
-fig.add_trace(go.Scatter(x=india_2029_demand_reshaped.index, y=((india_2029_demand_reshaped['Demand'])/1000),
+fig.add_trace(go.Scatter(x=india_2031_demand_reshaped.index, y=((india_2031_demand_reshaped['Demand'])/1000),
                  mode='lines',
-                 name='2029'))
+                 name='CY 2031'))
  
 # fig.add_trace(go.Scatter(x=india_2029_demand_reshaped.index, y=india_2029_demand_peak,
 #                  mode='lines',
@@ -548,20 +645,21 @@ fig.add_trace(go.Scatter(x=india_2029_demand_reshaped.index, y=((india_2029_dema
 
  
 
-fig.add_trace(go.Scatter(x=india_2029_demand_reshaped.index, y=(india_base['Demand'])/1000,
+fig.add_trace(go.Scatter(x=india_2031_demand_reshaped.index, y=(india_base['Data'])/1000,
                  mode='lines',
-                 name='2022'))
+                 name='CY 2022'))
 
 fig.update_xaxes(title_text="Days")
 
 # Update the y-axis title
-fig.update_yaxes(title_text="Demand(GW)")
-
- 
-fig.update_layout(title='India Demand Curve - 2029 vs 2022')
+fig.update_yaxes(title_text="Demand(GW)", range=[0, 350])
+#fig.update_yaxes(title_text="Demand (GW)", row=1, col=1, secondary_y=True, range=[0, 250], tickvals=[0,50,100, 150, 200, 250],ticktext=["0","50", "100", "150", "200", "250"])
 
 
-fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/allindia_demand.html')
+fig.update_layout(height=600, width=800,title='India Demand Curve - 2031 vs 2022', template ='simple_white')
+
+
+fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/allindia_demand.html')
 
 
 
@@ -569,8 +667,8 @@ fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/allindia_deman
 #%% India Peak Day 2029 vs India Peak Day 2030 Graph
 
 
-india_2029_demand_reshaped = pd.DataFrame(data=india_2029_demand_reshaped,index=india_2029_demand_reshaped.index)
-india_base = pd.DataFrame(data=india_base,index=india_base.index)
+# india_2029_demand_reshaped = pd.DataFrame(data=india_2029_demand_reshaped,index=india_2029_demand_reshaped.index)
+# india_base = pd.DataFrame(data=india_base,index=india_base.index)
 
 
 
@@ -578,21 +676,21 @@ india_base = pd.DataFrame(data=india_base,index=india_base.index)
 
 
 
-# Convert column to datetime format
-india_2029_demand_reshaped.index = pd.to_datetime(india_2029_demand_reshaped.index)
-india_base.index = pd.to_datetime(india_base.index)
+# # Convert column to datetime format
+# india_2029_demand_reshaped.index = pd.to_datetime(india_2029_demand_reshaped.index)
+# india_base.index = pd.to_datetime(india_base.index)
 
 
 
 # Extract year from datetime column
 # india_2029_demand_reshaped['Calendar Year'] = india_2029_demand_reshaped['Datetime'].dt.year
 
-india_2029_demand_reshaped = india_2029_demand_reshaped.rename(columns={0: 'Demand'})
-india_base = india_base.rename(columns={0: 'Demand'})
+# india_2029_demand_reshaped = india_2029_demand_reshaped.rename(columns={0: 'Demand'})
+india_base = india_base.rename(columns={'Data': 'Demand'})
 
 
 
-max_demand_indexes_1 = india_2029_demand_reshaped['Demand'].idxmax()
+max_demand_indexes_1 = india_2031_demand_reshaped['Demand'].idxmax()
 max_demand_indexes_2 = india_base['Demand'].idxmax()
 
 
@@ -603,7 +701,7 @@ date_string_2 = max_demand_indexes_2.strftime('%Y-%m-%d')
 
 x = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 
-y1 = (india_2029_demand_reshaped.loc[date_string_1,'Demand'])/1000
+y1 = (india_2031_demand_reshaped.loc[date_string_1,'Demand'])/1000
 y2 = (india_base.loc[date_string_2,'Demand'])/1000
 
 y1_max_idx = y1.argmax()
@@ -611,18 +709,102 @@ y2_max_idx = y2.argmax()
 
 fig = go.Figure()
 
-fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', name='Peak Day Load Curve of 2029'))
+fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', name='Peak Day Load Curve of 2031'))
 fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', name='Peak Day Load Curve of 2022'))
 
-fig.add_annotation(x=y1_max_idx, y=y1[y1_max_idx], text=f"Peak: {y1[y1_max_idx]:.2f} GW", showarrow=True, arrowhead=1, arrowcolor='blue')
-fig.add_annotation(x=y2_max_idx, y=y2[y2_max_idx], text=f"Peak: {y2[y2_max_idx]:.2f} GW", showarrow=True, arrowhead=1, arrowcolor='orange')
+fig.add_annotation(x=y1_max_idx, y=y1[y1_max_idx], text=f"Peak:  {round(y1[y1_max_idx])} GW", showarrow=True, arrowhead=1, arrowcolor='blue')
+fig.add_annotation(x=y2_max_idx, y=y2[y2_max_idx], text=f"Peak: {round(y2[y2_max_idx])} GW", showarrow=True, arrowhead=1, arrowcolor='orange')
 
-fig.update_xaxes(title_text='Hour of Day')
-fig.update_yaxes(title_text='Demand (GW)')
+fig.update_xaxes(title_text="Hour of Day", range=[0,23], tickmode='linear', dtick=3, tickfont=dict(size=16, family='Arial'))
+fig.update_yaxes(title_text="Demand(GW)", range=[0, 350], tickfont=dict(size=16, family='Arial'))
 
-fig.update_layout(title='Peak Day 2022 vs Peak Day 2030', legend=dict(x=0.01, y=0.99))
 
-fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/all_india_peak_day_base_2029.html')
+
+#fig.update_layout(height=600, width=800,title='India Demand Curve - 2029 vs 2022', template ='simple_white')
+
+
+fig.update_layout(height=600, width=800, template ='simple_white',
+    title='Peak Day 2022 vs Peak Day 2031',
+    xaxis_title='Hour of Day',
+    yaxis_title='Demand (GW)',
+    legend=dict(x=0.01, y=0.15),
+    font=dict(size=18, family='Arial'), 
+    
+    
+    shapes=[
+        # Daytime shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=7,
+            y0=0,
+            x1=17,
+            y1=1,
+            fillcolor='#FFFF66',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Day'
+        ),
+        
+        # Evening shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=17,
+            y0=0,
+            x1=23,
+            y1=1,
+            fillcolor='#FFD580',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Evening'
+        ),
+       # Night shading
+       # dict(
+       #     type='rect',
+       #     xref='x',
+       #     yref='paper',
+       #     x0=,
+       #     y0=0,
+       #     x1=23,
+       #     y1=1,
+       #     fillcolor='#ADD8E6',
+       #     opacity=0.3,
+       #     layer='below',
+       #     line_width=0,
+       #     name='Night'
+       #     ),
+       dict(
+           type='rect',
+           xref='x',
+           yref='paper',
+           x0=0,
+           y0=0,
+           x1=7,
+           y1=1,
+           fillcolor='#ADD8E6',
+           opacity=0.3,
+           layer='below',
+           line_width=0,
+           name='Night'
+           )
+
+
+    ]
+    
+    
+)
+
+
+# fig.update_layout(height=600, width=800, template ='simple_white',title='Peak Day 2022 vs Peak Day 2031', 
+#                   font=dict(size=20, family='Arial'), 
+#                   legend=dict(x=0.01, y=0.2,font=dict(size=16, family='Arial')))
+
+fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/all_india_peak_day_base_2029.html')
 
 
 
@@ -646,19 +828,19 @@ seasons = {
 }
 
 # Use apply method along with lambda function to create new 'Season' column
-india_2029_demand_reshaped['Season'] = india_2029_demand_reshaped.index.month.map(lambda x: seasons[x])
+india_2031_demand_reshaped['Season'] = india_2031_demand_reshaped.index.month.map(lambda x: seasons[x])
 
 
 # Group the data by 'Season' column and find the peak days within each group
-summer_peak_day = india_2029_demand_reshaped[india_2029_demand_reshaped['Season'] == 'Summer']['Demand'].idxmax().strftime('%Y-%m-%d')
-monsoon_peak_day = india_2029_demand_reshaped[india_2029_demand_reshaped['Season'] == 'Monsoon']['Demand'].idxmax().strftime('%Y-%m-%d')
-winter_peak_day = india_2029_demand_reshaped[india_2029_demand_reshaped['Season'] == 'Winter']['Demand'].idxmax().strftime('%Y-%m-%d')
+summer_peak_day = india_2031_demand_reshaped[india_2031_demand_reshaped['Season'] == 'Summer']['Demand'].idxmax().strftime('%Y-%m-%d')
+monsoon_peak_day = india_2031_demand_reshaped[india_2031_demand_reshaped['Season'] == 'Monsoon']['Demand'].idxmax().strftime('%Y-%m-%d')
+winter_peak_day = india_2031_demand_reshaped[india_2031_demand_reshaped['Season'] == 'Winter']['Demand'].idxmax().strftime('%Y-%m-%d')
 
 
 x = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
-y1 = (india_2029_demand_reshaped.loc[summer_peak_day,'Demand'])/1000
-y2 = (india_2029_demand_reshaped.loc[monsoon_peak_day,'Demand'])/1000
-y3 = (india_2029_demand_reshaped.loc[winter_peak_day,'Demand'])/1000
+y1 = (india_2031_demand_reshaped.loc[summer_peak_day,'Demand'])/1000
+y2 = (india_2031_demand_reshaped.loc[monsoon_peak_day,'Demand'])/1000
+y3 = (india_2031_demand_reshaped.loc[winter_peak_day,'Demand'])/1000
 
 
 y1_max_idx = y1.argmax()
@@ -683,34 +865,125 @@ fig.add_trace(go.Scatter(x=x, y=y3,
                     line=dict(color='green')))
 
 fig.add_annotation(x=y1_max_idx, y=y1[y1_max_idx],
-            text=f"Peak: {y1[y1_max_idx]:.2f} GW",
+            text=f"{round(y1[y1_max_idx])} GW",
             showarrow=True,
             arrowhead=1,
-            font=dict(color='orange', size=10),
-            xshift=10)
+            font=dict(color='orange', size=14),
+            xshift=0,
+            yshift=0,
+            ax=20,
+            ay=120)
 
 fig.add_annotation(x=y2_max_idx, y=y2[y2_max_idx],
-            text=f"Peak: {y2[y2_max_idx]:.2f} GW",
+            text=f"{round(y2[y2_max_idx])} GW",
             showarrow=True,
-            arrowhead=1,
-            font=dict(color='blue', size=10),
-            xshift=10)
+            arrowhead=2,
+            font=dict(color='blue', size=14),
+            xshift=0,
+            yshift=0,
+            ax=20,
+            ay=80)
 
 fig.add_annotation(x=y3_max_idx, y=y3[y3_max_idx],
-            text=f"Peak: {y3[y3_max_idx]:.2f} GW",
+            text=f"{round(y3[y3_max_idx])} GW",
             showarrow=True,
-            arrowhead=1,
-            font=dict(color='green', size=10),
-            xshift=10)
+            arrowhead=2,
+            font=dict(color='green', size=14),
+            xshift=0,
+            yshift=0,
+            ax=-20,
+            ay=60)
 
-fig.update_layout(
-    title='Seasonal Variations in Peak Day for 2029',
+
+
+
+fig.update_layout(height=600, width=800, template ='simple_white',
+    title='Seasonal Variations in Peak Day for 2031',
     xaxis_title='Hour of Day',
     yaxis_title='Demand (GW)',
-    legend=dict(x=0.01, y=0.95),
-)
+    legend=dict(x=0.01, y=0.15),
+    shapes=[
+        # Daytime shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=7,
+            y0=0,
+            x1=17,
+            y1=1,
+            fillcolor='#FFFF66',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Day'
+        ),
+        
+        # Evening shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=17,
+            y0=0,
+            x1=23,
+            y1=1,
+            fillcolor='#FFD580',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Evening'
+        ),
+       # Night shading
+       # dict(
+       #     type='rect',
+       #     xref='x',
+       #     yref='paper',
+       #     x0=,
+       #     y0=0,
+       #     x1=23,
+       #     y1=1,
+       #     fillcolor='#ADD8E6',
+       #     opacity=0.3,
+       #     layer='below',
+       #     line_width=0,
+       #     name='Night'
+       #     ),
+       dict(
+           type='rect',
+           xref='x',
+           yref='paper',
+           x0=0,
+           y0=0,
+           x1=7,
+           y1=1,
+           fillcolor='#ADD8E6',
+           opacity=0.3,
+           layer='below',
+           line_width=0,
+           name='Night'
+           )
 
-fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/seasonal_india_peak_day_2029.html')
+
+    ]
+    
+    
+)
+#fig.update_layout(height=600, width=800, template ='simple_white',title='Peak Day 2022 vs Peak Day 2030', legend=dict(x=0.01, y=0.99))
+
+
+fig.update_xaxes(title_text="Hour of Day", range=[0,23], tickmode='linear', dtick=3, tickfont=dict(size=14, family='Arial'))
+fig.update_yaxes(title_text="Demand(GW)", range=[0, 350], tickfont=dict(size=14, family='Arial'))
+
+
+
+fig.update_layout(height=600, width=800, template ='simple_white', 
+                  font=dict(size=20, family='Arial'), 
+                  legend=dict(x=0.01, y=0.2,font=dict(size=16, family='Arial')))
+
+
+fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/seasonal_india_peak_day_2029.html')
+
 
 #%% India Base year with Seasonal Variation. Note: Repeated code, with same variables.
 
@@ -770,34 +1043,125 @@ fig.add_trace(go.Scatter(x=x, y=y3,
                     line=dict(color='green')))
 
 fig.add_annotation(x=y1_max_idx, y=y1[y1_max_idx],
-            text=f"Peak: {y1[y1_max_idx]:.2f} GW",
+            text=f"{round(y1[y1_max_idx])} GW",
             showarrow=True,
             arrowhead=1,
-            font=dict(color='orange', size=10),
-            xshift=10)
+            font=dict(color='orange', size=14),
+            xshift=0,
+            yshift=0,
+            ax=20,
+            ay=-120)
 
 fig.add_annotation(x=y2_max_idx, y=y2[y2_max_idx],
-            text=f"Peak: {y2[y2_max_idx]:.2f} GW",
+            text=f"{round(y2[y2_max_idx])} GW",
             showarrow=True,
-            arrowhead=1,
-            font=dict(color='blue', size=10),
-            xshift=10)
+            arrowhead=2,
+            font=dict(color='blue', size=14),
+            xshift=0,
+            yshift=0,
+            ax=20,
+            ay=-80)
 
 fig.add_annotation(x=y3_max_idx, y=y3[y3_max_idx],
-            text=f"Peak: {y3[y3_max_idx]:.2f} GW",
+            text=f"{round(y3[y3_max_idx])} GW",
             showarrow=True,
-            arrowhead=1,
-            font=dict(color='green', size=10),
-            xshift=10)
+            arrowhead=2,
+            font=dict(color='green', size=14),
+            xshift=0,
+            yshift=0,
+            ax=-20,
+            ay=-60)
 
-fig.update_layout(
-    title='Seasonal Variations in Peak Day for Base Year(2022)',
+
+fig.update_layout(height=600, width=800, template ='simple_white',
+    title='Seasonal Variations in Peak Day for 2022',
     xaxis_title='Hour of Day',
     yaxis_title='Demand (GW)',
-    legend=dict(x=0.01, y=0.95),
-)
+    legend=dict(x=0.01, y=0.15),
+    shapes=[
+        # Daytime shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=7,
+            y0=0,
+            x1=17,
+            y1=1,
+            fillcolor='#FFFF66',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Day'
+        ),
+        
+        # Evening shading
+        dict(
+            type='rect',
+            xref='x',
+            yref='paper',
+            x0=17,
+            y0=0,
+            x1=23,
+            y1=1,
+            fillcolor='#FFD580',
+            opacity=0.3,
+            layer='below',
+            line_width=0,
+            name='Evening'
+        ),
+       # Night shading
+       # dict(
+       #     type='rect',
+       #     xref='x',
+       #     yref='paper',
+       #     x0=,
+       #     y0=0,
+       #     x1=23,
+       #     y1=1,
+       #     fillcolor='#ADD8E6',
+       #     opacity=0.3,
+       #     layer='below',
+       #     line_width=0,
+       #     name='Night'
+       #     ),
+       dict(
+           type='rect',
+           xref='x',
+           yref='paper',
+           x0=0,
+           y0=0,
+           x1=7,
+           y1=1,
+           fillcolor='#ADD8E6',
+           opacity=0.3,
+           layer='below',
+           line_width=0,
+           name='Night'
+           )
 
-fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/seasonal_india_peak_day_base.html')
+
+    ]
+    
+    
+)
+#fig.update_layout(height=600, width=800, template ='simple_white',title='Peak Day 2022 vs Peak Day 2030', legend=dict(x=0.01, y=0.99))
+
+
+fig.update_xaxes(title_text="Hour of Day", range=[0,23], tickmode='linear', dtick=3, tickfont=dict(size=16, family='Arial'))
+fig.update_yaxes(title_text="Demand(GW)", range=[0, 300], tickfont=dict(size=16, family='Arial'))
+
+
+
+#fig.update_layout(height=600, width=800, template ='simple_white',title='Peak Day 2022 vs Peak Day 2030', legend=dict(x=0.01, y=0.99))
+
+fig.update_xaxes(title_text="Hour of Day", range=[0,23], tickmode='linear', dtick=3)
+#fig.update_yaxes(title_text="Demand(GW)", range=[100, 250])
+
+fig.update_layout(width=800, height=600, template='simple_white')
+
+
+fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/Data_Peak_Power_Report/graphs/seasonal_india_peak_day_base.html')
 
 
 #%% Regional Calculation and Graphs
@@ -821,14 +1185,15 @@ for state, region in state_to_region.items():
     region_to_columns[region].append(state)
 
 # Compute the sum of each region's columns and create a new DataFrame
-region_to_sum_2029 = {}
+region_to_sum_2031 = {}
 region_to_sum_base = {}
+region_to_sum_2019 = {}
 
 for region, columns in region_to_columns.items():
-    region_to_sum_2029[region] = demand_2029_reshaped_exbus[columns].sum(axis=1)
+    region_to_sum_2031[region] = demand_2031_reshaped_exbus[columns].sum(axis=1)
     region_to_sum_base[region] = df_hourly_state_consumption_2022_exbus[columns].sum(axis=1)
     
-regional_demand_2029 = pd.DataFrame(region_to_sum_2029)
+regional_demand_2031 = pd.DataFrame(region_to_sum_2031)
 #regional_demand_2029 = regional_demand_2029.iloc[:-1]
 
 regional_demand_base = pd.DataFrame(region_to_sum_base)
@@ -871,28 +1236,35 @@ fig.add_trace(go.Scatter(x=regional_demand_base.index, y=(regional_demand_base['
 
 # Plot the next line on top of the previous one
 fig.add_trace(go.Scatter(x=regional_demand_base.index, y=(regional_demand_base['ER'])/1000,
-                         fill='tonexty', mode='lines', name='ER'))
+                          mode='lines', name='ER'))
 
 # Plot the next line on top of the previous one
 fig.add_trace(go.Scatter(x=regional_demand_base.index, y=(regional_demand_base['SR'])/1000,
-                         fill='tonexty', mode='lines', name='SR'))
+                          mode='lines', name='SR'))
 
 fig.add_trace(go.Scatter(x=regional_demand_base.index, y=(regional_demand_base['WR'])/1000,
-                         fill='tonexty', mode='lines', name='WR'))
+                          mode='lines', name='WR'))
 
 fig.add_trace(go.Scatter(x=regional_demand_base.index, y=(regional_demand_base['NR'])/1000,
-                         fill='tonexty', mode='lines', name='NR'))
+                          mode='lines', name='NR'))
 
 
-fig.update_xaxes(title_text="Days")
+fig.update_xaxes(title_text="Days", 
+                 tickfont=dict(size=16, family='Arial'))
 
-# Update the y-axis title
-fig.update_yaxes(title_text="Demand (GW)")
+# Update the y-axis title and tick labels
+fig.update_yaxes(title_text="Demand (GW)", 
+                 tickfont=dict(size=16, family='Arial'))
 
-fig.update_layout(title='India Regional Demand Distribution - 2022')
+# Update the layout title and legend font properties
+fig.update_layout(title='India Regional Demand Distribution - 2022', 
+                  font=dict(size=20, family='Arial'), 
+                  legend=dict(font=dict(size=16, family='Arial')))
+
+fig.update_layout(width=900, height=700, template='simple_white')
 
 
-fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/regional_demand_base.html')
+fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/regional_demand_base.html')
 
 
 
@@ -917,38 +1289,47 @@ fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/regional_deman
 
 # fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/regional_demand_2029.html')
 
+
+
 import plotly.graph_objs as go
 
 fig = go.Figure()
 
 # Plot the bottommost line
-fig.add_trace(go.Scatter(x=regional_demand_2029.index, y=(regional_demand_2029['NER'])/1000,
+fig.add_trace(go.Scatter(x=regional_demand_2031.index, y=(regional_demand_2031['NER'])/1000,
                          mode='lines', name='NER'))
 
 # Plot the next line on top of the previous one
-fig.add_trace(go.Scatter(x=regional_demand_2029.index, y=(regional_demand_2029['ER'])/1000,
-                         fill='tonexty', mode='lines', name='ER'))
+fig.add_trace(go.Scatter(x=regional_demand_2031.index, y=(regional_demand_2031['ER'])/1000,
+                          mode='lines', name='ER'))
 
 # Plot the next line on top of the previous one
-fig.add_trace(go.Scatter(x=regional_demand_2029.index, y=(regional_demand_2029['SR'])/1000,
-                         fill='tonexty', mode='lines', name='SR'))
+fig.add_trace(go.Scatter(x=regional_demand_2031.index, y=(regional_demand_2031['SR'])/1000,
+                          mode='lines', name='SR'))
 
-fig.add_trace(go.Scatter(x=regional_demand_2029.index, y=(regional_demand_2029['WR'])/1000,
-                         fill='tonexty', mode='lines', name='WR'))
+fig.add_trace(go.Scatter(x=regional_demand_2031.index, y=(regional_demand_2031['WR'])/1000,
+                          mode='lines', name='WR'))
 
-fig.add_trace(go.Scatter(x=regional_demand_2029.index, y=(regional_demand_2029['NR'])/1000,
-                         fill='tonexty', mode='lines', name='NR'))
-
-
-fig.update_xaxes(title_text="Days")
-
-# Update the y-axis title
-fig.update_yaxes(title_text="Demand (GW)")
-
-fig.update_layout(title='India Regional Demand Distribution - 2029')
+fig.add_trace(go.Scatter(x=regional_demand_2031.index, y=(regional_demand_2031['NR'])/1000,
+                          mode='lines', name='NR'))
 
 
-fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/graphs/regional_demand_2029.html')
+fig.update_xaxes(title_text="Days", 
+                 tickfont=dict(size=16, family='Arial'))
+
+# Update the y-axis title and tick labels
+fig.update_yaxes(title_text="Demand (GW)", 
+                 tickfont=dict(size=16, family='Arial'))
+
+# Update the layout title and legend font properties
+fig.update_layout(title='India Regional Demand Distribution - 2031', 
+                  font=dict(size=20, family='Arial'), 
+                  legend=dict(font=dict(size=16, family='Arial')))
+
+fig.update_layout(width=900, height=700, template='simple_white')
+
+fig.write_html('G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/regional_demand_2029.html')
+
 
 
 
@@ -984,7 +1365,7 @@ for day in peak_days_str:
         )
     )
     fig = go.Figure(data=traces, layout=layout)
-    filename = f"G:/My Drive/Work/Vasudha/Demand_Projection/graphs/regional_peak_days_{day[:4]}.html"
+    filename = f"G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/regional_peak_days_{day[:4]}.html"
     fig.write_html(filename)
     
     
@@ -1031,10 +1412,244 @@ for i, day in enumerate(peak_days_str):
         legend_added = True  # Set flag to True after adding legend
         
     
+fig.update_layout(width=900, height=700, template='simple_white')
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/regional_peak_days_old.html"
+fig.write_html(filename)
+
+
+#%% National + Regional Load Curve
+
+
+peak_days_str = ["2018-09-18", "2022-06-09"]
+
+import plotly.subplots as sp
+
+region_to_sum_all = {}
+
+for region, columns in region_to_columns.items():
+    region_to_sum_all[region] = df_hourly_state_demand[columns].sum(axis=1)
+
+df_hourly_state_demand_regional = pd.DataFrame(region_to_sum_all)
+df_hourly_state_demand_regional.index = df_hourly_state_demand_regional.index.round("H")
+
+#subplot_titles = [day[:4] for day in peak_days_str]  # Extract date part of title
+subplot_titles = ['2018:Evening Peak Load','2022: Day Peak Load' ]  # Extract date part of title
+
+
+fig = sp.make_subplots(rows=2, cols=1, subplot_titles=subplot_titles)
+
+legend_added = False  # Flag to track whether legend has been added
+
+for i, day in enumerate(peak_days_str):
+    row = i + 1
+    col = 1
+    data = df_hourly_state_demand_regional.loc[day[:10]] / 1000
+    for column in data.columns:
+        trace = go.Scatter(
+            x=data.index,
+            y=data[column],
+            name=column,
+            showlegend=not legend_added  # Only show legend if not already added
+        )
+        fig.add_trace(trace, row=row, col=col)
+    
+
+    fig.update_xaxes(title_text="Hour of Day", row=row, col=col)
+    fig.update_yaxes(title_text="Demand (GW)", row=row, col=col)
+    if not legend_added:  # Add legend if not already added
+        fig.update_layout(height=600, width=800, title={"text": "Peak Day Regional Load Curves",
+                                  "y": 0.95,
+                                  "x": 0.5,
+                                  "xanchor": "center",
+                                  "yanchor": "top"},
+                           showlegend=True)
+        legend_added = True  # Set flag to True after adding legend
         
 
-filename = "G:/My Drive/Work/Vasudha/Demand_Projection/graphs/regional_peak_days.html"
+fig.update_layout(width=900, height=700, template='simple_white')
+    
+   
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/Data_Peak_Power_Report/graphs/regional_peak_days_old.html"
 fig.write_html(filename)
+
+
+
+
+
+#%% Regional + National on Secondary
+
+import plotly.graph_objs as go
+import plotly.subplots as sp
+
+region_to_sum_all = {}
+
+for region, columns in region_to_columns.items():
+    region_to_sum_all[region] = df_hourly_state_demand[columns].sum(axis=1)
+
+df_hourly_state_demand_regional = pd.DataFrame(region_to_sum_all)
+df_hourly_state_demand_regional.index = df_hourly_state_demand_regional.index.round("H")
+
+peak_days_str = ["2018-09-18", "2022-06-09"]
+
+subplot_titles = ['2018:Evening Peak Load','2022: Day Peak Load' ]  # Extract date part of title
+
+fig = sp.make_subplots(rows=1, cols=1, subplot_titles=subplot_titles, specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
+
+# Define colors
+colors = ['blue', 'orange', 'green', 'red', 'purple']
+
+for i, day in enumerate(peak_days_str):
+    row = i + 1
+    col = 1
+    
+    # Add regional load curves
+    data = df_hourly_state_demand_regional.loc[day[:10]] / 1000
+    for j, column in enumerate(data.columns):
+        trace = go.Scatter(
+            x=data.index,
+            y=data[column],
+            name=column,
+            line=dict(color=colors[j % len(colors)]),
+            showlegend=i==0  # Don't show legend for regional load curves
+        )
+        fig.add_trace(trace, row=row, col=col ,secondary_y=False)
+    
+    # Add national load curve
+    
+    national_trace = go.Scatter(
+        x=data.index,
+        y=df[day] / 1000,
+        name="National",
+        showlegend=i==0  # Show legend only for first subplot
+    )
+    
+    national_trace.update(line={"dash": "dash", "color": "black"})
+    
+    fig.add_trace(national_trace, row=row, col=col, secondary_y=True)
+    
+    
+# Update legend for all traces
+#fig.update_traces(showlegend=True)
+
+
+
+
+
+# Update x and y axis titles
+fig.update_xaxes(title_text="Hour of Day", row=1, col=1)
+fig.update_xaxes(title_text="Hour of Day", row=2, col=1)
+fig.update_yaxes(title_text="Demand (GW)", row=2, col=1, secondary_y=False, tickvals=[0, 20, 40, 60, 80], ticktext=["0", "20", "40", "60", "80"])
+fig.update_yaxes(title_text="Demand (GW)", row=1, col=1, secondary_y=False, tickvals=[0, 20, 40, 60, 80], ticktext=["0", "20", "40", "60", "80"])
+fig.update_yaxes(title_text="Demand (GW)", row=2, col=1, secondary_y=True, range=[0, 250], tickvals=[0,50,100, 150, 200, 250],ticktext=["0","50", "100", "150", "200", "250"])
+fig.update_yaxes(title_text="Demand (GW)", row=1, col=1, secondary_y=True, range=[0, 250], tickvals=[0,50,100, 150, 200, 250],ticktext=["0","50", "100", "150", "200", "250"])
+
+
+# Set legend title
+fig.update_layout(legend_title="Region")
+fig.update_layout(width=900, height=700, template='simple_white')
+
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/regional_peak_days_new.html"
+fig.write_html(filename)
+
+
+#%% REgional + National side by side
+
+
+import plotly.graph_objs as go
+import plotly.subplots as sp
+
+region_to_sum_all = {}
+
+for region, columns in region_to_columns.items():
+    region_to_sum_all[region] = df_hourly_state_demand[columns].sum(axis=1)
+
+df_hourly_state_demand_regional = pd.DataFrame(region_to_sum_all)
+df_hourly_state_demand_regional.index = df_hourly_state_demand_regional.index.round("H")
+
+peak_days_str = ["2018-09-18", "2022-06-09"]
+
+subplot_titles = ['2018:Evening Peak Load', '2022: Day Peak Load']  # Extract date part of title
+
+fig = sp.make_subplots(rows=1, cols=2, subplot_titles=subplot_titles, specs=[[{"secondary_y": True}, {"secondary_y": True}]])
+
+
+# Define colors
+colors = ['blue', 'orange', 'green', 'red', 'purple']
+
+for i, day in enumerate(peak_days_str):
+    row = 1
+    col = i + 1
+    
+    # Add regional load curves
+    data = df_hourly_state_demand_regional.loc[day[:10]] / 1000
+    for j, column in enumerate(data.columns):
+        trace = go.Scatter(
+            x=data.index,
+            y=data[column],
+            name=column,
+            line=dict(color=colors[j % len(colors)]),
+            showlegend=i==0  # Don't show legend for regional load curves
+        )
+        fig.add_trace(trace, row=row, col=col ,secondary_y=False)
+    
+    # Add national load curve
+    
+    national_trace = go.Scatter(
+        x=data.index,
+        y=df[day] / 1000,
+        name="National",
+        showlegend=i==0  # Show legend only for first subplot
+    )
+    
+    national_trace.update(line={"dash": "dash", "color": "black"})
+    
+    fig.add_trace(national_trace, row=row, col=col, secondary_y=True)
+    
+    
+# Update legend for all traces
+#fig.update_traces(showlegend=True)
+
+
+# Update x and y axis titles
+# fig.update_xaxes(title_text="Hour of Day", row=1, col=1,title_font=dict(size=16))
+# fig.update_xaxes(title_text="Hour of Day", row=1, col=2,title_font=dict(size=16))
+fig.update_xaxes(title_text="Hour of Day", row=1, col=1, tickmode='linear', tick0=0, dtick=3, tickformat="%H", title_font=dict(size=16))
+fig.update_xaxes(title_text="Hour of Day", row=1, col=2, tickmode='linear', tick0=0, dtick=3, tickformat="%H", title_font=dict(size=16))
+
+
+# fig.update_xaxes(title_text="Hour of Day", row=1, col=1, tickmode='linear', tick0=0, dtick=3)
+# fig.update_xaxes(title_text="Hour of Day", row=1, col=2, tickmode='linear', tick0=0, dtick=3)
+
+
+
+fig.update_yaxes(title_text="Demand (GW)", row=1, col=1, secondary_y=False, range=[0,100], dtick=20,title_font=dict(size=16))
+fig.update_yaxes(title_text="Demand (GW)", row=1, col=2, secondary_y=False, range=[0,120], dtick=20,title_font=dict(size=16))
+
+
+fig.update_yaxes( row=1, col=1, secondary_y=True, range=[100,180], dtick=20,title_font=dict(size=16))
+fig.update_yaxes(title_text="Demand (GW)", row=1, col=2, secondary_y=True, range=[100,220], dtick=20,title_font=dict(size=16))
+
+
+# fig.update_yaxes(title_text="Demand (GW)", row=1, col=1, secondary_y=False, tickvals=[0, 20, 40, 60, 80], ticktext=["0", "20", "40", "60", "80"])
+# fig.update_yaxes(title_text="Demand (GW)", row=1, col=2, secondary_y=False, tickvals=[0, 20, 40, 60, 80], ticktext=["0", "20", "40", "60", "80"])
+# # fig.update_yaxes(title_text="Demand (GW)", row=1, col=1, secondary_y=True, range=[100, 250], tickvals=[150, 200, 250],ticktext=["0","50", "100", "150", "200", "250"])
+# fig.update_yaxes(title_text="Demand (GW)", row=1, col=2, secondary_y=True, range=[0, 250], tickvals=[100, 150, 200, 250])
+
+
+
+
+
+# Set legend title
+fig.update_layout(legend_title="Region")
+fig.update_layout(width=900, height=400, template='simple_white')
+
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/regional_peak_days_new.html"
+fig.write_html(filename)
+
 
 #%% Veri
 
@@ -1158,23 +1773,24 @@ india_hourly_demand.to_csv("G:/My Drive/Work/Vasudha/Demand_Projection/india_hou
 
 
 
-#%% Min/Max/Avg graphs monthly
-
-
-
-
+#%% Min/Max/Avg graphs monthly/weekly
 
 import plotly.express as px
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
+import plotly.io as pio
+
+india_hourly_demand.index = india_hourly_demand.index.round("H")
+
 
 # Group the dataframe by week and calculate the min, avg, and max demand
 india_weekly_demand = india_hourly_demand.groupby(pd.Grouper(freq='W'))['Data'].agg(['min', 'mean', 'max'])
 
+india_weekly_demand = india_weekly_demand[:-1]
 # Create a line chart with Plotly
 fig = px.line(india_weekly_demand/1000, x=india_weekly_demand.index, y=['min', 'mean', 'max'], 
-              title='Weekly Min, Avg, and Max Demand in India')
+              title='Weekly Demand Trend in India (2017-2022)',height=600, width=800)
 
 # Add linear trend lines to the chart
 for i, y_col in enumerate(['min', 'mean', 'max']):
@@ -1187,21 +1803,40 @@ for i, y_col in enumerate(['min', 'mean', 'max']):
         go.Scatter(
             x=india_weekly_demand.index,
             y=trendline,
-            name=f'{y_col} Trendline',
-            line=dict(dash='dash', color=line_color)
+            name=f'{y_col.capitalize()} Trendline',
+            line=dict(dash='dash', color=line_color),
+            showlegend=False
         )
     )
 
 # Update the chart layout with axes titles and no legend title
+
 fig.update_layout(
     xaxis_title='Date',
     yaxis_title='Demand (GW)',
     legend_title='',
-    template='plotly_white'
+    template='simple_white',
+    xaxis=dict( showline=True),
+    yaxis=dict(range=[0, india_weekly_demand.max().max()/1000], showline=True, zeroline=False, showticklabels=True, tick0=0, dtick=20, tickvals=[val for val in range(0, int(india_weekly_demand.max().max()/1000) + 1, 20)])
 )
 
-filename = "G:/My Drive/Work/Vasudha/Demand_Projection/graphs/india_min_max_avg.html"
+fig.for_each_trace(lambda trace: trace.update(name=trace.name.replace("min", "Min").replace("max", "Max").replace("mean", "Avg")))
+
+
+# fig.update_layout(
+#     xaxis_title='Date',
+#     yaxis_title='Demand (GW)',
+#     legend_title='',
+#     template='plotly_white')
+fig.update_yaxes( range=[0,220], dtick=20,title_font=dict(size=16))
+
+
+
+filename = "G:/My Drive/Work/Vasudha/Demand_Projection/d/graphs/india_min_max_avg.html"
 fig.write_html(filename)
+
+# filename = "G:/My Drive/Work/Vasudha/Demand_Projection/Data_Peak_Power_Report/graphs/india_min_max_avg.png"
+# pio.write_image(fig, filename,engine='kaleido')
 
 
 
@@ -1424,6 +2059,7 @@ for i in range(len(top_10_states)):
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
+import scipy.optimize
 
 
 
@@ -1475,6 +2111,10 @@ peak_demand = india_correlation['Peak Demand'].to_numpy()
 demand = india_correlation['Demand'].to_numpy()
 years = india_correlation.index.tolist()
 
+
+
+
+
 # Calculate correlation
 corr = np.corrcoef(peak_demand,demand)[0, 1]
 
@@ -1502,8 +2142,7 @@ fig.update_layout(title='Correlation between Peak Demand and Demand',
 
 
 # Add a correlation coefficient annotation to the plot
-fig.add_annotation(x=0.5, y=0.9, text=f'Correlation Coefficient: {corr:.3f}', showarrow=False, 
-                   xref='paper', yref='paper', align='center')
+fig.add_annotation(x=0.5, y=0.9, text=f'Correlation Coefficient: {corr:.3f}', showarrow=False, xref='paper', yref='paper', align='center')
 
 
 
